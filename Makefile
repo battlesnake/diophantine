@@ -1,5 +1,6 @@
 CC ?= gcc
-CFLAGS = -Wall -Wextra -pedantic -Ofast -flto -fopenmp -lm -ffunction-sections -fdata-sections -Wl,--gc-sections -march=native -mtune=native -masm=intel -Wno-unused-function
+O ?= fast
+CFLAGS = -Wall -Wextra -pedantic -O$(O) -flto -fopenmp -lm -ffunction-sections -fdata-sections -Wl,--gc-sections -march=native -mtune=native -masm=intel -Wno-unused-function -g
 
 RMF = rm -f --
 

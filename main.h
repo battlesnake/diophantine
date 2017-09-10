@@ -11,16 +11,31 @@ void solution_found(uint32_t a, uint32_t b, uint32_t c, uint32_t d, bool sur);
 
 extern const uint32_t max;
 
+static inline uint32_t maxint(uint32_t a, uint32_t b)
+{
+	return a > b ? a : b;
+}
+
+static inline uint32_t minint(uint32_t a, uint32_t b)
+{
+	return a < b ? a : b;
+}
+
 static inline uint32_t calc_dmax(uint32_t c)
 {
 	/* d must be odd */
-	return (85 * c / 64) | 1;
+	return maxint((85 * c / 64) | 1, 10001);
 }
 
 static inline uint32_t calc_dmin(uint32_t c)
 {
-	/* d must be odd, c must be even */
-	return c + 3;
+	/* d must be odd and ≥10000, c must be even */
+	return maxint(c + 3, 10001);
+}
+
+static inline bool skip_d(uint16_t a, uint16_t d)
+{
+	return ((a + d) & 1023) && ((a - d) & 1023);
 }
 
 static inline __uint128_t purec_pow4b(uint64_t x)

@@ -36,6 +36,9 @@ uint32_t linear_search(uint32_t a4b4c4, uint32_t a, uint32_t b, uint32_t c)
 	const uint32_t dmax = calc_dmax(c);
 	const uint32_t dmin = calc_dmin(c);
 	for (uint32_t d = dmin; d <= dmax; d += 2) {
+		if (skip_d(a, d)) {
+			continue;
+		}
 		const uint32_t d4 = pow4i(d);
 		/*
 		 * Verify is necessary as one search may find multiple

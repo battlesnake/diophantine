@@ -32,6 +32,15 @@ static void test()
 	if (solution_verify(95800, 217519, 414560, 422482)) {
 		fprintf(stderr, "%d: %s broken\n", __LINE__, "solution_verify");
 	}
+	if (estimate_root(4, 256) != 4) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "estimate_root");
+	}
+	if (estimate_root(10, 81) != 3) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "estimate_root");
+	}
+	if (estimate_root(2, 625) != 5) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "estimate_root");
+	}
 }
 
 int main(int argc, char *argv[])
@@ -259,7 +268,7 @@ void progress_update(uint32_t delta)
 		}
 		const float dt = (clock() - t0) * 1.0f / CLOCKS_PER_SEC;
 		const float eta = prog_max * dt / prog_val - dt;
-		fprintf(stderr, "\r%.3f%%, ETA %.0fs (%.1fy)  ", prog_val * 100.0f / prog_max, eta, eta / (86400 * 365.25));
+		fprintf(stderr, "\r%.3f%%, ETA %.0fs (%.2fy)  ", prog_val * 100.0f / prog_max, eta, eta / (86400 * 365.25));
 	}
 #	pragma omp atomic
 	prog_val += delta;
