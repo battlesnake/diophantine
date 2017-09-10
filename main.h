@@ -10,14 +10,16 @@ void solution_found(uint32_t a, uint32_t b, uint32_t c, uint32_t d, bool sur);
 
 extern const uint32_t max;
 
-static inline uint32_t calc_dmax(uint32_t abcmax)
+static inline uint32_t calc_dmax(uint32_t c)
 {
-	return (85 * abcmax) / 64 + 1;
+	/* d must be odd */
+	return (85 * c / 64) | 1;
 }
 
-static inline uint32_t calc_dmin(uint32_t abcmax)
+static inline uint32_t calc_dmin(uint32_t c)
 {
-	return abcmax + 4;
+	/* d must be odd, c must be even */
+	return c + 3;
 }
 
 static inline __uint128_t pow4b(uint64_t x)
