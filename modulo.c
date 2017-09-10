@@ -13,9 +13,14 @@ void using_modulo()
 		const uint32_t a4 = pow4i(a);
 #		pragma omp parallel for
 		for (uint32_t b = a + 1; b < max; b += 2) {
+			const uint32_t gcd = euclid_gcd(a, b);
 			const uint32_t a4b4 = pow4i(b) + a4;
-			progress_update();
+			progress_update((max - b) / 2);
 			for (uint32_t c = b; c < max; c += 2) {
+				/* Skip if (a,b,c) != 1 */
+				if (gcd > 1 && c % gcd == 0) {
+					continue;
+				}
 				const uint32_t a4b4c4 = pow4i(c) + a4b4;
 				const uint32_t d = linear_search(a4b4c4, a, b, c);
 				if (d) {

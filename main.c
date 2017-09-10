@@ -11,10 +11,33 @@
 
 const uint32_t max = 500000;
 
+static void test()
+{
+	const uint32_t x = 0xfedcba98U;
+	if (pow4b(1) != 1) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "pow4b");
+	}
+	if (pow4b(x) != (__uint128_t) x * x * x * x) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "pow4b");
+	}
+	if (pow4i(1) != 1) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "pow4i");
+	}
+	if (pow4i(x) != x * x * x * x) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "pow4i");
+	}
+	if (!solution_verify(95800, 217519, 414560, 422481)) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "solution_verify");
+	}
+	if (solution_verify(95800, 217519, 414560, 422482)) {
+		fprintf(stderr, "%d: %s broken\n", __LINE__, "solution_verify");
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	/*
-	 * Solves the Diophantine equation:
+	 * Finds some solutions to the Diophantine equation:
 	 *
 	 *   a⁴ + b⁴ + c⁴ = d⁴
 	 *
@@ -22,6 +45,11 @@ int main(int argc, char *argv[])
 	 *
 	 *   a, b, c, d ∊ ℤ⁺
 	 *
+	 */
+
+	/*
+	 * We introduce some constraints and optimisations, to prune the search
+	 * space.  Some of these will eliminate valid solutions.
 	 */
 
 	/*
@@ -51,6 +79,9 @@ int main(int argc, char *argv[])
 	 *  ∴ Constraints:
 	 *   ∙ a, d: odd
 	 *   ∙ b, c: even
+	 *
+	 * This loses some solutions, as it requires that "a" (the smallest
+	 * value of a/b/c) is also the odd one.
 	 */
 
 	/*
@@ -145,6 +176,8 @@ int main(int argc, char *argv[])
 	 *
 	 */
 
+	test();
+
 	if (argc <= 1 || strcmp(argv[1], "-h") == 0) {
 		fprintf(stderr, "Argument required: modulo / binary / estimate\n");
 		return EINVAL;
@@ -189,18 +222,36 @@ void solution_found(uint32_t a, uint32_t b, uint32_t c, uint32_t d, bool sure)
 }
 
 /* Progress monitoring */
-static uint64_t prog_val;
 static clock_t t0;
-static uint64_t prog_max;
+static __uint128_t prog_val;
+static __uint128_t prog_max;
+
+/*
+ * Progress:
+ *
+ * A = 1, 3, ..., N
+ * B = A+1, A+3, ..., N
+ * C = B+2, B+4, ..., N
+ *
+ * Let n = N/2:
+ *
+ * A = 2a+1; a < n
+ * B = 2b+1+A; b < n-a
+ * C = 2c+2+B; c < n-b-a
+ *
+ * Approximate triple-summation with integral over a, b, c of 1.dc.db.da, to get
+ * total cycles approx N^3/144.
+ *
+ */
 
 void progress_zero()
 {
 	prog_val = 0;
 	t0 = clock();
-	prog_max = ((uint64_t) max * max) / 8 - max / 4;
+	prog_max = (__uint128_t) max * max * max / 144;
 }
 
-void progress_update()
+void progress_update(uint32_t delta)
 {
 	if (!(prog_val & 0x3ff)) {
 		if (prog_val == 0) {
@@ -208,8 +259,13 @@ void progress_update()
 		}
 		const float dt = (clock() - t0) * 1.0f / CLOCKS_PER_SEC;
 		const float eta = prog_max * dt / prog_val - dt;
-		fprintf(stderr, "\r%lu/%lu: %.1f%%, ETA %.0fs (%.1fy)  ", prog_val, prog_max, prog_val * 100.0f / prog_max, eta, eta / (86400 * 365.25));
+		fprintf(stderr, "\r%.3f%%, ETA %.0fs (%.1fy)  ", prog_val * 100.0f / prog_max, eta, eta / (86400 * 365.25));
 	}
 #	pragma omp atomic
-	prog_val++;
+	prog_val += delta;
+}
+
+void progress_skip(uint32_t count)
+{
+	prog_max -= count;
 }
